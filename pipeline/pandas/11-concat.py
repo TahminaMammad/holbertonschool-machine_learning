@@ -5,9 +5,6 @@ with proper indexing and labeling.
 """
 
 
-index = __import__("10-index").index
-
-
 def concat(df1, df2):
     """
     Indexes both DataFrames on their Timestamp columns,
