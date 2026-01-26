@@ -4,8 +4,6 @@ Module that slices a DataFrame to extract specific columns
 and select every 60th row.
 """
 
-import pandas as pd
-
 
 def slice(df):
     """
