@@ -4,9 +4,6 @@ Module that converts the last 10 rows of High and Close
 columns from a DataFrame into a numpy.ndarray.
 """
 
-import pandas as pd
-import numpy as np
-
 
 def array(df):
     """
