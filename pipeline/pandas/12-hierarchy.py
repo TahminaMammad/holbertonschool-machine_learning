@@ -5,7 +5,6 @@ concatenates bitstamp and coinbase tables within a given range,
 and ensures chronological order.
 """
 
-import pandas as pd
 
 index = __import__("10-index").index
 

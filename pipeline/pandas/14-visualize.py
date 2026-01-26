@@ -3,8 +3,6 @@
 Script to clean and visualize cryptocurrency data.
 """
 
-import matplotlib.pyplot as plt
-import pandas as pd
 
 from_file = __import__("2-from_file").from_file
 

@@ -4,7 +4,6 @@ Module that concatenates two DataFrames (bitstamp and coinbase)
 with proper indexing and labeling.
 """
 
-import pandas as pd
 
 index = __import__("10-index").index
 

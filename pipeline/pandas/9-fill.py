@@ -4,8 +4,6 @@ Module that cleans a DataFrame by removing Weighted_Price
 and filling missing values appropriately.
 """
 
-import pandas as pd
-
 
 def fill(df):
     """

@@ -3,8 +3,6 @@
 Module that sorts a DataFrame by the High price in descending order.
 """
 
-import pandas as pd
-
 
 def high(df):
     """
