@@ -10,7 +10,8 @@ def fill(df):
 
     - Removes the Weighted_Price column.
     - Fills missing Close values with the previous row's value.
-    - Fills missing Open, High, and Low values with the Close value of the same row.
+    - Fills missing Open, High, and Low values with the Close
+      value of the same row.
     - Sets missing Volume_(BTC) and Volume_(Currency) values to 0.
 
     Args:
