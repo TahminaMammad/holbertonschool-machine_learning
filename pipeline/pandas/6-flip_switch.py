@@ -1,22 +1,11 @@
 #!/usr/bin/env python3
-"""
-Module that sorts a DataFrame in reverse chronological order
-and transposes the result.
-"""
+"""Flip and Switch module"""
+import pandas as pd
 
 
 def flip_switch(df):
     """
-    Sorts the DataFrame in reverse chronological order
-    and transposes it.
-
-    Args:
-        df (pd.DataFrame): DataFrame containing a 'Timestamp' column
-
-    Returns:
-        pd.DataFrame: Transposed DataFrame sorted in reverse chronological order
+    Sorts a DataFrame in reverse chronological order
+    and transposes the sorted DataFrame
     """
-    # Sort by Timestamp descending
-    df_sorted = df.sort_values("Timestamp", ascending=False)
-    # Transpose the DataFrame
-    return df_sorted.transpose()
+    return df.sort_index(ascending=False).transpose()
