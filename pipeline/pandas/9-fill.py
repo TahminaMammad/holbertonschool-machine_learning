@@ -24,7 +24,7 @@ def fill(df):
     """
     # Remove Weighted_Price column
     if "Weighted_Price" in df.columns:
-        df = df.drop(columns=["Weighted_Price"])
+    df = df.drop(columns=["Weighted_Price"])
 
     # Fill missing Close values with previous row’s value
     df["Close"] = df["Close"].fillna(method="ffill")
