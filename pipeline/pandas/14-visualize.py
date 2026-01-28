@@ -1,53 +1,73 @@
 #!/usr/bin/env python3
 """
-Script to clean and visualize cryptocurrency data.
+Visualizes Bitcoin price data after cleaning and aggregation.
 """
 
+import matplotlib.pyplot as plt
+import pandas as pd
 
-from_file = __import__("2-from_file").from_file
+from_file = __import__('2-from_file').from_file
 
-df = from_file("coinbaseUSD_1-min_data_2014-12-01_to_2019-01-09.csv", ",")
 
-# Remove Weighted_Price column
-if "Weighted_Price" in df.columns:
-    df = df.drop(columns=["Weighted_Price"])
+def visualize(df):
+    """
+    Transforms and visualizes the DataFrame.
 
-# Rename Timestamp to Date
-df = df.rename(columns={"Timestamp": "Date"})
+    Args:
+        df (pd.DataFrame): Raw Bitcoin DataFrame.
 
-# Convert timestamp values to datetime
-df["Date"] = pd.to_datetime(df["Date"], unit="s")
+    Returns:
+        pd.DataFrame: Transformed DataFrame before plotting.
+    """
+    # Remove Weighted_Price
+    df = df.drop(columns=['Weighted_Price'])
 
-# Index the DataFrame on Date
-df = df.set_index("Date")
+    # Rename Timestamp to Date
+    df = df.rename(columns={'Timestamp': 'Date'})
 
-# Fill missing values
-df["Close"] = df["Close"].fillna(method="ffill")
-for col in ["High", "Low", "Open"]:
-    df[col] = df[col].fillna(df["Close"])
-df["Volume_(BTC)"] = df["Volume_(BTC)"].fillna(0)
-df["Volume_(Currency)"] = df["Volume_(Currency)"].fillna(0)
+    # Convert timestamp to datetime
+    df['Date'] = pd.to_datetime(df['Date'], unit='s')
 
-# Filter data from 2017 onwards
-df = df.loc["2017-01-01":]
+    # Index on Date
+    df = df.set_index('Date')
 
-# Resample daily and aggregate
-df = df.resample("D").agg(
-    {
-        "High": "max",
-        "Low": "min",
-        "Open": "mean",
-        "Close": "mean",
-        "Volume_(BTC)": "sum",
-        "Volume_(Currency)": "sum",
-    }
-)
+    # Fill missing Close values with previous row
+    df['Close'] = df['Close'].fillna(method='ffill')
 
-# Plot the Close price
-df["Close"].plot(title="Daily Close Price (2017 and beyond)")
-plt.xlabel("Date")
-plt.ylabel("Close Price")
-plt.show()
+    # Fill Open, High, Low with Close value
+    for col in ['Open', 'High', 'Low']:
+        df[col] = df[col].fillna(df['Close'])
 
-# Return the transformed DataFrame
-print(df)
+    # Fill volume columns with 0
+    df['Volume_(BTC)'] = df['Volume_(BTC)'].fillna(0)
+    df['Volume_(Currency)'] = df['Volume_(Currency)'].fillna(0)
+
+    # Filter from 2017 onwards
+    df = df['2017-01-01':]
+
+    # Resample daily and aggregate
+    df = df.resample('D').agg({
+        'High': 'max',
+        'Low': 'min',
+        'Open': 'mean',
+        'Close': 'mean',
+        'Volume_(BTC)': 'sum',
+        'Volume_(Currency)': 'sum'
+    })
+
+    # Plot
+    df.plot(subplots=True, figsize=(12, 10))
+    plt.tight_layout()
+    plt.show()
+
+    return df
+
+
+if __name__ == '__main__':
+    df = from_file(
+        'coinbaseUSD_1-min_data_2014-12-01_to_2019-01-09.csv',
+        ','
+    )
+
+    df = visualize(df)
+    print(df)
