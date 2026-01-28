@@ -1,40 +1,36 @@
 #!/usr/bin/env python3
 """
-Module 9-fill
-Provides a function to clean and fill missing values in a DataFrame.
+Module that fills missing values in a pandas DataFrame.
 """
 
 
 def fill(df):
     """
-    Cleans and fills missing values in a DataFrame.
+    Cleans and fills missing values in the DataFrame.
 
-    Steps:
-        - Removes the Weighted_Price column.
-        - Fills missing values in the Close column with the previous row’s value.
-        - Fills missing values in High, Low, and Open columns with the
-          corresponding Close value in the same row.
-        - Sets missing values in Volume_(BTC) and Volume_(Currency) to 0.
+    - Removes the Weighted_Price column.
+    - Fills missing Close values with the previous row's value.
+    - Fills missing Open, High, and Low values with the Close value of the same row.
+    - Sets missing Volume_(BTC) and Volume_(Currency) values to 0.
 
     Args:
-        df (pd.DataFrame): The input DataFrame.
+        df (pd.DataFrame): Input DataFrame.
 
     Returns:
-        pd.DataFrame: The modified DataFrame.
+        pd.DataFrame: Modified DataFrame.
     """
     # Remove Weighted_Price column
-    if "Weighted_Price" in df.columns:
-    df = df.drop(columns=["Weighted_Price"])
+    df = df.drop(columns=['Weighted_Price'])
 
-    # Fill missing Close values with previous row’s value
-    df["Close"] = df["Close"].fillna(method="ffill")
+    # Fill missing Close values with previous value
+    df['Close'] = df['Close'].fillna(method='ffill')
 
-    # Fill missing High, Low, Open with corresponding Close value
-    for col in ["High", "Low", "Open"]:
-        df[col] = df[col].fillna(df["Close"])
+    # Fill Open, High, Low with Close value of the same row
+    for col in ['Open', 'High', 'Low']:
+        df[col] = df[col].fillna(df['Close'])
 
-    # Set missing values in Volume_(BTC) and Volume_(Currency) to 0
-    for col in ["Volume_(BTC)", "Volume_(Currency)"]:
-        df[col] = df[col].fillna(0)
+    # Fill volume columns with 0
+    df['Volume_(BTC)'] = df['Volume_(BTC)'].fillna(0)
+    df['Volume_(Currency)'] = df['Volume_(Currency)'].fillna(0)
 
     return df
