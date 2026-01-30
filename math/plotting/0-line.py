@@ -3,6 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def line():
     """Plots y = x^3 as a solid red line from x = 0 to 10"""
     y = np.arange(0, 11) ** 3
