@@ -3,7 +3,7 @@
 Module for calculating the minor matrix of a square matrix.
 """
 
-from 0-determinant import determinant
+from 0_determinant import determinant
 
 
 def minor(matrix):
