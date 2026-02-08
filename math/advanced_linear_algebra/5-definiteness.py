@@ -26,6 +26,10 @@ def definiteness(matrix):
     if matrix.size == 0:
         return None
 
+    # Must be symmetric for definiteness
+    if not np.allclose(matrix, matrix.T):
+        return None
+
     try:
         eigenvalues = np.linalg.eigvals(matrix)
     except np.linalg.LinAlgError:
