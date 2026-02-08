@@ -9,7 +9,8 @@ def determinant(matrix):
     Calculates the determinant of a square matrix.
 
     Args:
-        matrix (list of lists): The matrix whose determinant is to be calculated.
+        matrix (list of lists): The matrix whose determinant is to be
+        calculated.
 
     Returns:
         int or float: The determinant of the matrix.
@@ -19,7 +20,8 @@ def determinant(matrix):
         ValueError: If matrix is not square.
     """
     # Validate input type
-    if not isinstance(matrix, list) or not all(isinstance(row, list) for row in matrix):
+    if not isinstance(matrix, list) or not all(isinstance(row, list)
+                                               for row in matrix):
         raise TypeError("matrix must be a list of lists")
 
     # Handle empty matrix case
