@@ -1,4 +1,4 @@
-i#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Module that calculates the minor matrix of a given matrix
 """
