@@ -28,3 +28,28 @@ class Poisson:
             if len(data) < 2:
                 raise ValueError("data must contain multiple values")
             self.lambtha = float(sum(data) / len(data))
+
+    def pmf(self, k):
+        """
+        Calculates the value of the PMF for a given number of successes
+
+        Args:
+            k (int): number of successes
+
+        Returns:
+            float: PMF value for k
+        """
+        k = int(k)
+
+        if k < 0:
+            return 0
+
+        e = 2.7182818285
+
+        factorial = 1
+        for i in range(1, k + 1):
+            factorial *= i
+
+        return ((self.lambtha ** k) *
+                (e ** (-self.lambtha)) /
+                factorial)
