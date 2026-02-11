@@ -31,12 +31,34 @@ class Binomial:
             mean = sum(data) / len(data)
             variance = sum((x - mean) ** 2 for x in data) / len(data)
 
-            # estimate p first
+            # Estimate p first
             p_est = 1 - (variance / mean) if mean != 0 else 0
-            # estimate n and round
+            # Estimate n and round
             n_est = round(mean / p_est) if p_est != 0 else 0
-            # recalculate p
+            # Recalculate p
             p_est = mean / n_est if n_est != 0 else 0
 
             self.n = int(n_est)
             self.p = float(p_est)
+
+    def factorial(self, x):
+        """
+        Calculates factorial of x
+        """
+        if x == 0 or x == 1:
+            return 1
+        result = 1
+        for i in range(2, x + 1):
+            result *= i
+        return result
+
+    def pmf(self, k):
+        """
+        Calculates the PMF for a given number of successes k
+        """
+        k = int(k)
+        if k < 0 or k > self.n:
+            return 0
+        comb = (self.factorial(self.n) /
+                (self.factorial(k) * self.factorial(self.n - k)))
+        return comb * (self.p ** k) * ((1 - self.p) ** (self.n - k))
