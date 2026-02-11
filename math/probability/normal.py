@@ -9,6 +9,9 @@ class Normal:
     Normal distribution class
     """
 
+    e = 2.7182818285
+    pi = 3.1415926536
+
     def __init__(self, data=None, mean=0., stddev=1.):
         """
         Initialize a Normal distribution
@@ -42,3 +45,10 @@ class Normal:
         Calculates the x-value of a given z-score
         """
         return z * self.stddev + self.mean
+
+    def pdf(self, x):
+        """
+        Calculates the value of the PDF for a given x-value
+        """
+        exponent = -((x - self.mean) ** 2) / (2 * self.stddev ** 2)
+        return (1 / (self.stddev * (2 * Normal.pi) ** 0.5)) * (Normal.e ** exponent)
