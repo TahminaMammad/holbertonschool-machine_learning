@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Module for calculating likelihood of a binomial distribution."""
+"""Module for calculating likelihood of a binomial distribution using NumPy."""
 
 import numpy as np
 
@@ -37,8 +37,8 @@ def likelihood(x, n, P):
     if np.any(P < 0) or np.any(P > 1):
         raise ValueError("All values in P must be in the range [0, 1]")
 
-    # Binomial likelihood calculation: C(n, x) * P^x * (1-P)^(n-x)
-    comb = np.math.comb(n, x)
+    # Binomial likelihood using NumPy (fully vectorized)
+    comb = np.exp(np.math.lgamma(n + 1) - np.math.lgamma(x + 1) - np.math.lgamma(n - x + 1))
     likelihoods = comb * (P ** x) * ((1 - P) ** (n - x))
 
     return likelihoods
