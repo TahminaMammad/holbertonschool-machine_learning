@@ -29,7 +29,9 @@ def likelihood(x, n, P):
     if type(n) is not int or n <= 0:
         raise ValueError("n must be a positive integer")
     if type(x) is not int or x < 0:
-        raise ValueError("x must be an integer that is greater than or equal to 0")
+        raise ValueError(
+            "x must be an integer that is greater than or equal to 0"
+        )
     if x > n:
         raise ValueError("x cannot be greater than n")
     if not isinstance(P, np.ndarray) or P.ndim != 1:
@@ -38,7 +40,9 @@ def likelihood(x, n, P):
         raise ValueError("All values in P must be in the range [0, 1]")
 
     # Binomial likelihood using NumPy (fully vectorized)
-    comb = np.exp(np.math.lgamma(n + 1) - np.math.lgamma(x + 1) - np.math.lgamma(n - x + 1))
+    comb = np.exp(
+        np.math.lgamma(n + 1) - np.math.lgamma(x + 1) - np.math.lgamma(n - x + 1)
+    )
     likelihoods = comb * (P ** x) * ((1 - P) ** (n - x))
 
     return likelihoods
