@@ -43,6 +43,7 @@ def likelihood(x, n, P):
     comb = np.exp(
         np.math.lgamma(n + 1) - np.math.lgamma(x + 1) - np.math.lgamma(n - x + 1)
     )
-    likelihoods = comb * (P ** x) * ((1 - P) ** (n - x))
+    likelihoods = (comb * (P ** x) *
+                   ((1 - P) ** (n - x)))
 
     return likelihoods
