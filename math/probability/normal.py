@@ -51,4 +51,5 @@ class Normal:
         Calculates the value of the PDF for a given x-value
         """
         exponent = -((x - self.mean) ** 2) / (2 * self.stddev ** 2)
-        return (1 / (self.stddev * (2 * Normal.pi) ** 0.5)) * (Normal.e ** exponent)
+        coefficient = 1 / (self.stddev * (2 * Normal.pi) ** 0.5)
+        return coefficient * (Normal.e ** exponent)
