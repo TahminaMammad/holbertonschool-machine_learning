@@ -3,6 +3,7 @@
 Exponential distribution module
 """
 
+
 class Exponential:
     """
     Exponential distribution class
@@ -19,7 +20,9 @@ class Exponential:
             self.lambtha = float(lambtha)
         else:
             if type(data) is not list or len(data) < 2:
-                raise ValueError("data must be a list with at least two values")
+                raise ValueError(
+                    "data must be a list with at least two values"
+                )
             self.lambtha = 1 / (sum(data) / len(data))
 
     def cdf(self, x):
