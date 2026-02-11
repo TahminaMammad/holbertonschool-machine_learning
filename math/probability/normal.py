@@ -53,3 +53,17 @@ class Normal:
         exponent = -((x - self.mean) ** 2) / (2 * self.stddev ** 2)
         coefficient = 1 / (self.stddev * (2 * Normal.pi) ** 0.5)
         return coefficient * (Normal.e ** exponent)
+
+    def cdf(self, x):
+        """
+        Calculates the value of the CDF for a given x-value
+        """
+        # z = (x - mean) / (stddev * sqrt(2))
+        z = (x - self.mean) / (self.stddev * (2 ** 0.5))
+
+        # approximate erf(z) using a 5-term Maclaurin series
+        erf = (2 / Normal.pi ** 0.5) * (
+            z - (z ** 3) / 3 + (z ** 5) / 10 - (z ** 7) / 42 + (z ** 9) / 216
+        )
+
+        return 0.5 * (1 + erf)
