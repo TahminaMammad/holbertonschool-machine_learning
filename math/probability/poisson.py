@@ -39,7 +39,8 @@ class Poisson:
         Returns:
             float: PMF value for k
         """
-        k = int(k)
+        if not isinstance(k, int):
+            k = int(k)
 
         if k < 0:
             return 0
@@ -53,3 +54,25 @@ class Poisson:
         return ((self.lambtha ** k) *
                 (e ** (-self.lambtha)) /
                 factorial)
+
+    def cdf(self, k):
+        """
+        Calculates the value of the CDF for a given number of successes
+
+        Args:
+            k (int): number of successes
+
+        Returns:
+            float: CDF value for k
+        """
+        if not isinstance(k, int):
+            k = int(k)
+
+        if k < 0:
+            return 0
+
+        cdf_sum = 0
+        for i in range(0, k + 1):
+            cdf_sum += self.pmf(i)
+
+        return cdf_sum
