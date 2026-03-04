@@ -18,7 +18,7 @@ class Node:
                  left_child=None, right_child=None,
                  is_root=False, depth=0):
         """
-        Initializes a Node instance.
+        Initialize a Node instance.
         """
         self.feature = feature
         self.threshold = threshold
@@ -31,27 +31,27 @@ class Node:
 
     def left_child_add_prefix(self, text):
         """
-        Adds formatting prefix for left subtree.
+        Add formatting prefix for left subtree.
         """
         lines = text.split("\n")
         new_text = "    +--" + lines[0] + "\n"
-        for line in lines[1:]:
-            new_text += "    |  " + line + "\n"
-        return new_text.rstrip("\n")
+        for x in lines[1:]:
+            new_text += ("    |  " + x) + "\n"
+        return new_text
 
     def right_child_add_prefix(self, text):
         """
-        Adds formatting prefix for right subtree.
+        Add formatting prefix for right subtree.
         """
         lines = text.split("\n")
         new_text = "    +--" + lines[0] + "\n"
-        for line in lines[1:]:
-            new_text += "       " + line + "\n"
-        return new_text.rstrip("\n")
+        for x in lines[1:]:
+            new_text += ("       " + x) + "\n"
+        return new_text
 
     def __str__(self):
         """
-        Returns string representation of the node and its subtree.
+        Return string representation of the node.
         """
         if self.is_root:
             node_repr = (
@@ -70,7 +70,7 @@ class Node:
         left_block = self.left_child_add_prefix(left_text)
         right_block = self.right_child_add_prefix(right_text)
 
-        return node_repr + "\n" + left_block + "\n" + right_block
+        return node_repr + "\n" + left_block + right_block
 
 
 class Leaf(Node):
@@ -80,7 +80,7 @@ class Leaf(Node):
 
     def __init__(self, value, depth=None):
         """
-        Initializes a Leaf instance.
+        Initialize a Leaf instance.
         """
         super().__init__()
         self.value = value
@@ -89,7 +89,7 @@ class Leaf(Node):
 
     def __str__(self):
         """
-        Returns string representation of a leaf.
+        Return string representation of a leaf.
         """
         return f"-> leaf [value={self.value}]"
 
@@ -103,7 +103,7 @@ class Decision_Tree:
                  seed=0, split_criterion="random",
                  root=None):
         """
-        Initializes a Decision_Tree instance.
+        Initialize a Decision_Tree instance.
         """
         self.rng = np.random.default_rng(seed)
 
@@ -121,6 +121,6 @@ class Decision_Tree:
 
     def __str__(self):
         """
-        Returns string representation of the tree.
+        Return string representation of the tree.
         """
         return self.root.__str__()
