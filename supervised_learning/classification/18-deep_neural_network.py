@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 """
-Defines a class DeepNeuralNetwork with private attributes.
+Defines a class DeepNeuralNetwork that defines a deep neural network
+performing binary classification, including forward propagation.
 """
 import numpy as np
 
 
 class DeepNeuralNetwork:
     """
-    Represents a deep neural network performing binary classification.
+    Represents a deep neural network performing binary classification
     """
 
     def __init__(self, nx, layers):
         """
-        Class constructor.
+        Class constructor
         Args:
-            nx: number of input features.
-            layers: list containing the number of nodes in each layer.
+            nx: number of input features
+            layers: list of nodes in each layer
         """
         if not isinstance(nx, int):
             raise TypeError("nx must be an integer")
@@ -28,13 +29,11 @@ class DeepNeuralNetwork:
         self.__cache = {}
         self.__weights = {}
 
-        # Initialization logic (Only one loop)
         for i in range(self.__L):
             if not isinstance(layers[i], int) or layers[i] < 1:
                 raise TypeError("layers must be a list of positive integers")
 
             l_idx = i + 1
-            # Input size: nx if first layer, else previous layer nodes
             prev_size = nx if i == 0 else layers[i - 1]
 
             # He et al. initialization
@@ -46,15 +45,36 @@ class DeepNeuralNetwork:
 
     @property
     def L(self):
-        """Getter for the number of layers"""
+        """Getter for number of layers"""
         return self.__L
 
     @property
     def cache(self):
-        """Getter for the dictionary of intermediary values"""
+        """Getter for cache dictionary"""
         return self.__cache
 
     @property
     def weights(self):
-        """Getter for the dictionary of weights and biases"""
+        """Getter for weights dictionary"""
         return self.__weights
+
+    def forward_prop(self, X):
+        """
+        Performs forward propagation
+        Args:
+            X: numpy.ndarray of shape (nx, m) with input data
+        Returns:
+            Output of the neural network and the cache
+        """
+        self.__cache['A0'] = X
+        A_prev = X
+
+        for l in range(1, self.__L + 1):
+            W = self.__weights[f"W{l}"]
+            b = self.__weights[f"b{l}"]
+            Z = np.dot(W, A_prev) + b
+            A = 1 / (1 + np.exp(-Z))  # Sigmoid activation
+            self.__cache[f"A{l}"] = A
+            A_prev = A
+
+        return A, self.__cache
