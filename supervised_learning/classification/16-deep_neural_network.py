@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 """
-Defines a class DeepNeuralNetwork for binary classification.
+Defines a class DeepNeuralNetwork that defines a deep neural network
+performing binary classification
 """
 import numpy as np
 
 
 class DeepNeuralNetwork:
     """
-    Represents a deep neural network.
+    Represents a deep neural network
     """
 
     def __init__(self, nx, layers):
         """
-        Class constructor.
+        Class constructor
         Args:
-            nx: number of input features.
-            layers: list of nodes in each layer.
+            nx: number of input features
+            layers: list representing the number of nodes in each layer
         """
         if not isinstance(nx, int):
             raise TypeError("nx must be an integer")
@@ -28,17 +29,19 @@ class DeepNeuralNetwork:
         self.cache = {}
         self.weights = {}
 
-        # He et al. initialization (The only allowed loop)
+        # Initialization logic (Only one loop used)
         for i in range(self.L):
             if not isinstance(layers[i], int) or layers[i] < 1:
                 raise TypeError("layers must be a list of positive integers")
 
-            # Layer index starts at 1
             l_idx = i + 1
-            # Input size for the first layer is nx, otherwise it's layers[i-1]
-            prev_size = nx if i == 0 else layers[i - 1]
+            # Determine previous layer size
+            if i == 0:
+                prev_size = nx
+            else:
+                prev_size = layers[i - 1]
 
-            # He initialization: standard normal * sqrt(2 / n_prev)
+            # He et al. initialization
             he_init = np.sqrt(2 / prev_size)
             self.weights[f"W{l_idx}"] = (np.random.randn(layers[i], prev_size) *
                                          he_init)
