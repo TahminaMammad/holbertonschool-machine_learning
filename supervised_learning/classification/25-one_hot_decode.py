@@ -7,7 +7,8 @@ def one_hot_decode(one_hot):
     """
     Converts a one-hot encoded numpy.ndarray into a vector of labels.
     one_hot: numpy.ndarray of shape (classes, m)
-    Returns: numpy.ndarray of shape (m,) with numeric labels, or None on failure
+    Returns: numpy.ndarray of shape (m,) with numeric labels,
+             or None on failure
     """
     if not isinstance(one_hot, np.ndarray) or one_hot.ndim != 2:
         return None
