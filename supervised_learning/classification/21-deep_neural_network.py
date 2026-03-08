@@ -1,103 +1,147 @@
 #!/usr/bin/env python3
 """
-DeepNeuralNetwork gradient descent implementation
+Module to create a deep neural network
 """
 import numpy as np
 
 
 class DeepNeuralNetwork:
     """
-    Defines a deep neural network performing binary classification
+    A class that defines a deep neural network with one hidden layer performing
+    binary classification
     """
 
     def __init__(self, nx, layers):
-        """Class constructor"""
-        if not isinstance(nx, int):
+        """
+        class constructor
+        :param nx: is the number of input features to the neuron
+        :param layers: a list representing the number of nodes in each layer
+        """
+        if type(nx) is not int:
             raise TypeError("nx must be an integer")
         if nx < 1:
             raise ValueError("nx must be a positive integer")
-        if not isinstance(layers, list) or len(layers) == 0:
+        self.nx = nx
+        if type(layers) is not list or len(layers) == 0:
             raise TypeError("layers must be a list of positive integers")
-
+        # L is the number of layers in the neural network
         self.__L = len(layers)
+        # cache is a dictionary to hold all intermediary values of the network
         self.__cache = {}
-        self.__weights = {}
-
-        for i in range(self.__L):
-            if not isinstance(layers[i], int) or layers[i] < 1:
+        # weights is a dictionary to hold all weighs and biased of the network
+        weights = {}
+        for i in range(len(layers)):
+            if layers[i] < 1:
                 raise TypeError("layers must be a list of positive integers")
-            
-            l_idx = i + 1
-            prev_size = nx if i == 0 else layers[i - 1]
-            he_init = np.sqrt(2 / prev_size)
-            self.__weights[f"W{l_idx}"] = (
-                np.random.randn(layers[i], prev_size) * he_init
-            )
-            self.__weights[f"b{l_idx}"] = np.zeros((layers[i], 1))
-
-    @property
-    def L(self):
-        """L getter"""
-        return self.__L
-
-    @property
-    def cache(self):
-        """cache getter"""
-        return self.__cache
-
-    @property
-    def weights(self):
-        """weights getter"""
-        return self.__weights
+            key_w = 'W' + str(i + 1)
+            key_b = 'b' + str(i + 1)
+            if i == 0:
+                weights[key_w] = np.random.randn(layers[i], nx)*np.sqrt(2 / nx)
+            else:
+                weights[key_w] = np.random.randn(layers[i], layers[
+                    i-1]) * np.sqrt(2 / layers[i-1])
+            weights[key_b] = np.zeros((layers[i], 1))
+        self.__weights = weights
 
     def forward_prop(self, X):
-        """Calculates forward propagation"""
-        self.__cache["A0"] = X
+        """
+        calculates the forward propagation of the deep neural network
+        :param X:np array with the input data of shape (nx, m)
+        :return: the output of the deep neural network and the cache,
+        where cache is the activated output of each layer
+        """
+        # Input layer
+        self.__cache['A0'] = X
+        # Hidden and output layer
         for i in range(self.__L):
-            w = self.__weights[f"W{i + 1}"]
-            b = self.__weights[f"b{i + 1}"]
-            prev_a = self.__cache[f"A{i}"]
-            z = np.matmul(w, prev_a) + b
-            self.__cache[f"A{i + 1}"] = 1 / (1 + np.exp(-z))
-        return self.__cache[f"A{self.__L}"], self.__cache
+            # create keys to access weights(W), biases(b) and store in cache
+            key_w = 'W' + str(i + 1)
+            key_b = 'b' + str(i + 1)
+            key_cache = 'A' + str(i + 1)
+            key_cache_last = 'A' + str(i)
+            # store activation in cache
+            output_Z = np.matmul(self.__weights[key_w], self.__cache[
+                key_cache_last]) + self.__weights[key_b]
+            output_A = 1 / (1 + np.exp(-output_Z))
+            self.__cache[key_cache] = output_A
+        return output_A, self.__cache
 
     def cost(self, Y, A):
-        """Calculates cost of the model"""
-        m = Y.shape[1]
-        loss = -(Y * np.log(A) + (1 - Y) * np.log(1.0000001 - A))
-        return (1 / m) * np.sum(loss)
+        """
+        calculates the cost of the model using logistic regression
+        :param Y: a np array with correct labels of shape (1, m)
+        :param A: a np array with the activated output of shape (1, m)
+        :return: the cost
+        """
+        cost = Y * np.log(A) + (1 - Y) * np.log(1.0000001 - A)
+        cost = np.sum(cost)
+        cost = - cost / A.shape[1]
+        return cost
 
     def evaluate(self, X, Y):
-        """Evaluates predictions"""
-        a, _ = self.forward_prop(X)
-        cost = self.cost(Y, a)
-        prediction = np.where(a >= 0.5, 1, 0)
+        """
+        evaluates the deep neural network prediction
+        :param X: np array with input data of shape (nx, m)
+        :param Y: np array with correct label of shape (1, m)
+        :return: neuron´s prediction and cost of the network
+        """
+        A, _ = self.forward_prop(X)
+        prediction = np.where(A >= 0.5, 1, 0)
+        cost = self.cost(Y, A)
         return prediction, cost
 
     def gradient_descent(self, Y, cache, alpha=0.05):
         """
-        Calculates one pass of gradient descent
-        Args:
-            Y: labels for the input data
-            cache: dictionary of intermediary values
-            alpha: learning rate
+        calculates one pass of gradient descent on the neuron
+        :param Y: np array with correct labels of shape (1, m)
+        :param cache: dictionary containing all intermediary values of the
+        network
+        :param alpha: the learning rate
+        :return: no return
         """
         m = Y.shape[1]
-        # Iterate backwards through layers
-        for i in range(self.__L, 0, -1):
-            a_current = cache[f"A{i}"]
-            a_prev = cache[f"A{i - 1}"]
-            w_key = f"W{i}"
-            b_key = f"b{i}"
-
-            if i == self.__L:
-                dz = a_current - Y
+        for i in reversed(range(self.__L)):
+            # create keys to access weights(W), biases(b) and store in cache
+            key_w = 'W' + str(i + 1)
+            key_b = 'b' + str(i + 1)
+            key_cache = 'A' + str(i + 1)
+            key_cache_dw = 'A' + str(i)
+            # Activation
+            A = cache[key_cache]
+            A_dw = cache[key_cache_dw]
+            if i == self.__L - 1:
+                dz = A - Y
+                W = self.__weights[key_w]
             else:
-                w_next = self.__weights[f"W{i + 1}"]
-                dz = np.matmul(w_next.T, dz) * (a_current * (1 - a_current))
+                da = A * (1 - A)
+                dz = np.matmul(W.T, dz)
+                dz = dz * da
+                W = self.__weights[key_w]
+            dw = np.matmul(A_dw, dz.T) / m
+            db = np.sum(dz, axis=1, keepdims=True) / m
+            self.__weights[key_w] = self.__weights[key_w] - alpha * dw.T
+            self.__weights[key_b] = self.__weights[key_b] - alpha * db
 
-            dw = (1 / m) * np.matmul(dz, a_prev.T)
-            db = (1 / m) * np.sum(dz, axis=1, keepdims=True)
+    @property
+    def cache(self):
+        """
+        attribute getter for cache
+        :return: cache
+        """
+        return self.__cache
 
-            self.__weights[w_key] -= alpha * dw
-            self.__weights[b_key] -= alpha * db
+    @property
+    def L(self):
+        """
+        attribute getter for L (number of layers)
+        :return: L
+        """
+        return self.__L
+
+    @property
+    def weights(self):
+        """
+        attribute getter for weights
+        :return: weights
+        """
+        return self.__weights
