@@ -1,24 +1,17 @@
 #!/usr/bin/env python3
 """
-Defines a class DeepNeuralNetwork that defines a deep neural network
-performing binary classification, including forward propagation, 
-cost calculation, evaluation, and gradient descent.
+DeepNeuralNetwork gradient descent implementation
 """
 import numpy as np
 
 
 class DeepNeuralNetwork:
     """
-    Represents a deep neural network performing binary classification
+    Defines a deep neural network performing binary classification
     """
 
     def __init__(self, nx, layers):
-        """
-        Class constructor
-        Args:
-            nx: number of input features
-            layers: list of nodes in each layer
-        """
+        """Class constructor"""
         if not isinstance(nx, int):
             raise TypeError("nx must be an integer")
         if nx < 1:
@@ -33,11 +26,9 @@ class DeepNeuralNetwork:
         for i in range(self.__L):
             if not isinstance(layers[i], int) or layers[i] < 1:
                 raise TypeError("layers must be a list of positive integers")
-
+            
             l_idx = i + 1
             prev_size = nx if i == 0 else layers[i - 1]
-
-            # He et al. initialization
             he_init = np.sqrt(2 / prev_size)
             self.__weights[f"W{l_idx}"] = (
                 np.random.randn(layers[i], prev_size) * he_init
@@ -46,98 +37,67 @@ class DeepNeuralNetwork:
 
     @property
     def L(self):
-        """Getter for number of layers"""
+        """L getter"""
         return self.__L
 
     @property
     def cache(self):
-        """Getter for cache dictionary"""
+        """cache getter"""
         return self.__cache
 
     @property
     def weights(self):
-        """Getter for weights dictionary"""
+        """weights getter"""
         return self.__weights
 
     def forward_prop(self, X):
-        """
-        Performs forward propagation
-        Args:
-            X: numpy.ndarray of shape (nx, m) with input data
-        Returns:
-            Output of the neural network and the cache
-        """
-        self.__cache['A0'] = X
-        A_prev = X
-
-        for layer in range(1, self.__L + 1):
-            W = self.__weights[f"W{layer}"]
-            b = self.__weights[f"b{layer}"]
-            Z = np.dot(W, A_prev) + b
-            A = 1 / (1 + np.exp(-Z))  # Sigmoid activation
-            self.__cache[f"A{layer}"] = A
-            A_prev = A
-
-        return A, self.__cache
+        """Calculates forward propagation"""
+        self.__cache["A0"] = X
+        for i in range(self.__L):
+            w = self.__weights[f"W{i + 1}"]
+            b = self.__weights[f"b{i + 1}"]
+            prev_a = self.__cache[f"A{i}"]
+            z = np.matmul(w, prev_a) + b
+            self.__cache[f"A{i + 1}"] = 1 / (1 + np.exp(-z))
+        return self.__cache[f"A{self.__L}"], self.__cache
 
     def cost(self, Y, A):
-        """
-        Calculates the cost using logistic regression
-        Args:
-            Y: numpy.ndarray of shape (1, m) with correct labels
-            A: numpy.ndarray of shape (1, m) with activated output
-        Returns:
-            Cost
-        """
+        """Calculates cost of the model"""
         m = Y.shape[1]
-        cost = - (1 / m) * np.sum(
-            Y * np.log(A) + (1 - Y) * np.log(1.0000001 - A)
-        )
-        return cost
+        loss = -(Y * np.log(A) + (1 - Y) * np.log(1.0000001 - A))
+        return (1 / m) * np.sum(loss)
 
     def evaluate(self, X, Y):
-        """
-        Evaluates the network's predictions
-        Args:
-            X: numpy.ndarray of shape (nx, m) with input data
-            Y: numpy.ndarray of shape (1, m) with correct labels
-        Returns:
-            Prediction and cost
-        """
-        A, _ = self.forward_prop(X)
-        prediction = np.where(A >= 0.5, 1, 0)
-        cost = self.cost(Y, A)
+        """Evaluates predictions"""
+        a, _ = self.forward_prop(X)
+        cost = self.cost(Y, a)
+        prediction = np.where(a >= 0.5, 1, 0)
         return prediction, cost
 
     def gradient_descent(self, Y, cache, alpha=0.05):
         """
-        Performs one pass of gradient descent on the network
+        Calculates one pass of gradient descent
         Args:
-            Y: numpy.ndarray of shape (1, m) with correct labels
-            cache: dictionary containing all intermediary values
+            Y: labels for the input data
+            cache: dictionary of intermediary values
             alpha: learning rate
         """
         m = Y.shape[1]
-        L = self.__L
-        weights_copy = self.__weights.copy()
-        dA_prev = 0
+        # Iterate backwards through layers
+        for i in range(self.__L, 0, -1):
+            a_current = cache[f"A{i}"]
+            a_prev = cache[f"A{i - 1}"]
+            w_key = f"W{i}"
+            b_key = f"b{i}"
 
-        for layer in reversed(range(1, L + 1)):
-            A = cache[f"A{layer}"]
-            A_prev = cache[f"A{layer - 1}"]
-            W = weights_copy[f"W{layer}"]
-
-            if layer == L:
-                dZ = A - Y
+            if i == self.__L:
+                dz = a_current - Y
             else:
-                dZ = dA_prev * A * (1 - A)
+                w_next = self.__weights[f"W{i + 1}"]
+                dz = np.matmul(w_next.T, dz) * (a_current * (1 - a_current))
 
-            dW = np.dot(dZ, A_prev.T) / m
-            db = np.sum(dZ, axis=1, keepdims=True) / m
+            dw = (1 / m) * np.matmul(dz, a_prev.T)
+            db = (1 / m) * np.sum(dz, axis=1, keepdims=True)
 
-            self.__weights[f"W{layer}"] -= alpha * dW
-            self.__weights[f"b{layer}"] -= alpha * db
-
-            if layer > 1:
-                W_prev = weights_copy[f"W{layer}"]
-                dA_prev = np.dot(W_prev.T, dZ)
+            self.__weights[w_key] -= alpha * dw
+            self.__weights[b_key] -= alpha * db
