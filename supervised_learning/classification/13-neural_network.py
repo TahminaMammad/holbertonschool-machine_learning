@@ -1,33 +1,33 @@
 #!/usr/bin/env python3
-"""
-Defines a class NeuralNetwork that performs binary classification
-including gradient descent.
-"""
+"""Module that defines a neural network with one hidden layer"""
+
 import numpy as np
 
 
 class NeuralNetwork:
-    """
-    Represents a neural network with one hidden layer.
-    """
+    """Neural network with one hidden layer performing binary classification"""
 
     def __init__(self, nx, nodes):
-        """
-        Class constructor.
-        """
+        """Initialize the neural network"""
+        # Validate nx
         if not isinstance(nx, int):
             raise TypeError("nx must be an integer")
         if nx < 1:
             raise ValueError("nx must be a positive integer")
+
+        # Validate nodes
         if not isinstance(nodes, int):
             raise TypeError("nodes must be an integer")
         if nodes < 1:
             raise ValueError("nodes must be a positive integer")
 
-        self.__W1 = np.random.normal(size=(nodes, nx))
+        # Hidden layer
+        self.__W1 = np.random.randn(nodes, nx)
         self.__b1 = np.zeros((nodes, 1))
         self.__A1 = 0
-        self.__W2 = np.random.normal(size=(1, nodes))
+
+        # Output neuron
+        self.__W2 = np.random.randn(1, nodes)
         self.__b2 = 0
         self.__A2 = 0
 
@@ -56,47 +56,46 @@ class NeuralNetwork:
         return self.__A2
 
     def forward_prop(self, X):
-        """Calculates the forward propagation"""
-        z1 = np.matmul(self.__W1, X) + self.__b1
-        self.__A1 = 1 / (1 + np.exp(-z1))
-        z2 = np.matmul(self.__W2, self.__A1) + self.__b2
-        self.__A2 = 1 / (1 + np.exp(-z2))
+        """
+        Calculates forward propagation of the neural network
+
+        Parameters:
+        X (numpy.ndarray): input data of shape (nx, m)
+
+        Returns:
+        tuple: activated outputs (A1, A2)
+        """
+        Z1 = np.matmul(self.__W1, X) + self.__b1
+        self.__A1 = 1 / (1 + np.exp(-Z1))
+        Z2 = np.matmul(self.__W2, self.__A1) + self.__b2
+        self.__A2 = 1 / (1 + np.exp(-Z2))
         return self.__A1, self.__A2
-
-    def cost(self, Y, A):
-        """Calculates the cost using logistic regression"""
-        m = Y.shape[1]
-        loss = -(Y * np.log(A) + (1 - Y) * np.log(1.0000001 - A))
-        cost = (1 / m) * np.sum(loss)
-        return cost
-
-    def evaluate(self, X, Y):
-        """Evaluates the neural network's predictions"""
-        _, A2 = self.forward_prop(X)
-        cost = self.cost(Y, A2)
-        prediction = np.where(A2 >= 0.5, 1, 0)
-        return prediction, cost
 
     def gradient_descent(self, X, Y, A1, A2, alpha=0.05):
         """
-        Calculates one pass of gradient descent.
-        Updates __W1, __b1, __W2, and __b2.
+        Performs one pass of gradient descent on the neural network
+
+        Parameters:
+        X (numpy.ndarray): input data of shape (nx, m)
+        Y (numpy.ndarray): correct labels of shape (1, m)
+        A1 (numpy.ndarray): hidden layer activated output
+        A2 (numpy.ndarray): predicted output
+        alpha (float): learning rate
         """
         m = Y.shape[1]
 
-        # Calculate gradients for output layer (2)
-        dz2 = A2 - Y
-        dw2 = (1 / m) * np.matmul(dz2, A1.T)
-        db2 = (1 / m) * np.sum(dz2, axis=1, keepdims=True)
+        # Output layer gradients
+        dZ2 = A2 - Y  # derivative of cost w.r.t Z2
+        dW2 = np.matmul(dZ2, A1.T) / m
+        db2 = np.sum(dZ2, axis=1, keepdims=True) / m
 
-        # Calculate gradients for hidden layer (1)
-        # derivative of sigmoid is A1 * (1 - A1)
-        dz1 = np.matmul(self.__W2.T, dz2) * (A1 * (1 - A1))
-        dw1 = (1 / m) * np.matmul(dz1, X.T)
-        db1 = (1 / m) * np.sum(dz1, axis=1, keepdims=True)
+        # Hidden layer gradients
+        dZ1 = np.matmul(self.__W2.T, dZ2) * (A1 * (1 - A1))
+        dW1 = np.matmul(dZ1, X.T) / m
+        db1 = np.sum(dZ1, axis=1, keepdims=True) / m
 
         # Update weights and biases
-        self.__W2 = self.__W2 - (alpha * dw2)
-        self.__b2 = self.__b2 - (alpha * db2)
-        self.__W1 = self.__W1 - (alpha * dw1)
-        self.__b1 = self.__b1 - (alpha * db1)
+        self.__W1 -= alpha * dW1
+        self.__b1 -= alpha * db1
+        self.__W2 -= alpha * dW2
+        self.__b2 -= alpha * db2
