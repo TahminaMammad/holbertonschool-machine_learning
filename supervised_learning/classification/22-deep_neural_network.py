@@ -12,15 +12,18 @@ class DeepNeuralNetwork:
             raise TypeError("nx must be an integer")
         if nx < 1:
             raise ValueError("nx must be a positive integer")
-        if not isinstance(layers, list) or len(layers) == 0 or not all(
-            isinstance(l, int) and l > 0 for l in layers
-        ):
+        if not isinstance(layers, list) or len(layers) == 0:
             raise TypeError("layers must be a list of positive integers")
+        for l in layers:
+            if not isinstance(l, int) or l <= 0:
+                raise TypeError("layers must be a list of positive integers")
+
         self.nx = nx
         self.layers = layers
         self.L = len(layers)
         self.__cache = {}
         self.__weights = {}
+
         for i, nodes in enumerate(layers):
             key_W = f"W{i + 1}"
             key_b = f"b{i + 1}"
@@ -32,46 +35,37 @@ class DeepNeuralNetwork:
 
     @property
     def weights(self):
-        """Get weights dictionary"""
         return self.__weights
 
     @property
     def cache(self):
-        """Get cache dictionary"""
         return self.__cache
 
     def forward_prop(self, X):
-        """Calculates forward propagation of the network"""
         self.__cache["A0"] = X
         for i in range(self.L):
             W = self.__weights[f"W{i + 1}"]
             b = self.__weights[f"b{i + 1}"]
             A_prev = self.__cache[f"A{i}"]
             Z = np.dot(W, A_prev) + b
-            A = 1 / (1 + np.exp(-Z))  # Sigmoid activation
+            A = 1 / (1 + np.exp(-Z))
             self.__cache[f"A{i + 1}"] = A
         return A, self.__cache
 
     def cost(self, Y, A):
-        """Calculates cost using logistic regression"""
         m = Y.shape[1]
-        cost = -(1 / m) * np.sum(
-            Y * np.log(A) + (1 - Y) * np.log(1.0000001 - A)
-        )
-        return cost
+        return -(1 / m) * np.sum(Y * np.log(A) + (1 - Y) * np.log(1.0000001 - A))
 
     def evaluate(self, X, Y):
-        """Evaluates network predictions"""
         A, _ = self.forward_prop(X)
         predictions = np.where(A >= 0.5, 1, 0)
         cost = self.cost(Y, A)
         return predictions, cost
 
     def gradient_descent(self, Y, cache, alpha=0.05):
-        """Performs one pass of gradient descent on the network"""
         m = Y.shape[1]
-        weights_copy = self.__weights.copy()
         dA_prev = 0
+        weights_copy = self.__weights.copy()
 
         for i in reversed(range(self.L)):
             A_curr = cache[f"A{i + 1}"]
@@ -94,7 +88,6 @@ class DeepNeuralNetwork:
             self.__weights[f"b{i + 1}"] = self.__weights[f"b{i + 1}"] - alpha * db
 
     def train(self, X, Y, iterations=5000, alpha=0.05):
-        """Trains the deep neural network"""
         if not isinstance(iterations, int):
             raise TypeError("iterations must be an integer")
         if iterations <= 0:
@@ -107,4 +100,5 @@ class DeepNeuralNetwork:
         for _ in range(iterations):
             A, cache = self.forward_prop(X)
             self.gradient_descent(Y, cache, alpha)
+
         return self.evaluate(X, Y)
