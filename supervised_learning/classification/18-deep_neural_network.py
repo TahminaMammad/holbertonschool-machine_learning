@@ -69,12 +69,12 @@ class DeepNeuralNetwork:
         self.__cache['A0'] = X
         A_prev = X
 
-        for l in range(1, self.__L + 1):
-            W = self.__weights[f"W{l}"]
-            b = self.__weights[f"b{l}"]
+        for layer in range(1, self.__L + 1):
+            W = self.__weights[f"W{layer}"]
+            b = self.__weights[f"b{layer}"]
             Z = np.dot(W, A_prev) + b
             A = 1 / (1 + np.exp(-Z))  # Sigmoid activation
-            self.__cache[f"A{l}"] = A
+            self.__cache[f"A{layer}"] = A
             A_prev = A
 
         return A, self.__cache
