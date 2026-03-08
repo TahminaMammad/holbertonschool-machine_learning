@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Defines a class DeepNeuralNetwork that defines a deep neural network
-performing binary classification
+performing binary classification.
 """
 import numpy as np
 
@@ -29,20 +29,16 @@ class DeepNeuralNetwork:
         self.cache = {}
         self.weights = {}
 
-        # Initialization logic (Only one loop used)
         for i in range(self.L):
             if not isinstance(layers[i], int) or layers[i] < 1:
                 raise TypeError("layers must be a list of positive integers")
 
             l_idx = i + 1
-            # Determine previous layer size
-            if i == 0:
-                prev_size = nx
-            else:
-                prev_size = layers[i - 1]
+            prev_size = nx if i == 0 else layers[i - 1]
 
             # He et al. initialization
             he_init = np.sqrt(2 / prev_size)
-            self.weights[f"W{l_idx}"] = (np.random.randn(layers[i], prev_size) *
-                                         he_init)
+            self.weights[f"W{l_idx}"] = (
+                np.random.randn(layers[i], prev_size) * he_init
+            )
             self.weights[f"b{l_idx}"] = np.zeros((layers[i], 1))
