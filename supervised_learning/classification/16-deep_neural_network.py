@@ -1,19 +1,8 @@
 #!/usr/bin/env python3
-"""Module that defines a deep neural network performing binary classification"""
-
 import numpy as np
 
-
 class DeepNeuralNetwork:
-    """Deep neural network performing binary classification"""
-
     def __init__(self, nx, layers):
-        """Initialize the deep neural network
-
-        Args:
-            nx (int): Number of input features
-            layers (list): Number of nodes in each layer
-        """
         if not isinstance(nx, int):
             raise TypeError("nx must be an integer")
         if nx < 1:
@@ -29,15 +18,6 @@ class DeepNeuralNetwork:
 
         for l in range(self.L):
             layer_size = layers[l]
-            if l == 0:
-                prev_size = nx
-            else:
-                prev_size = layers[l - 1]
-
-            # He et al. initialization for weights
-            self.weights["W{}".format(l + 1)] = (
-                np.random.randn(layer_size, prev_size) *
-                np.sqrt(2 / prev_size)
-            )
-            # Bias initialization to zeros
+            prev_size = nx if l == 0 else layers[l - 1]
+            self.weights["W{}".format(l + 1)] = np.random.randn(layer_size, prev_size) * np.sqrt(2 / prev_size)
             self.weights["b{}".format(l + 1)] = np.zeros((layer_size, 1))
