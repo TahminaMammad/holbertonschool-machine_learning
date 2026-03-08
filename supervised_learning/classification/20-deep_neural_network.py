@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Defines a class DeepNeuralNetwork that defines a deep neural network
-performing binary classification, including forward propagation, 
+performing binary classification, including forward propagation,
 cost calculation, and evaluation.
 """
 import numpy as np
