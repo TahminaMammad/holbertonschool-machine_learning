@@ -1,44 +1,35 @@
 #!/usr/bin/env python3
-"""
-Module to create a batch normalization layer in TensorFlow
-"""
+"""Creates a batch normalization layer for a neural network in TensorFlow"""
+
 import tensorflow as tf
 
 
 def create_batch_norm_layer(prev, n, activation):
     """
-    Creates a batch normalization layer for a neural network in tensorflow
+    Creates a batch normalization layer for a neural network.
 
-    Args:
-        prev: the activated output of the previous layer
-        n: the number of nodes in the layer to be created
-        activation: the activation function that should be used on the output
-                    of the layer
+    prev: tensor, activated output of the previous layer
+    n: number of nodes in the layer to be created
+    activation: activation function applied to the output
 
-    Returns:
-        A tensor of the activated output for the layer
+    Returns: tensor of the activated output for the layer
     """
-    # 1. Setup the Kernel Initializer
-    # mode='fan_avg' ensures weights are scaled based on input/output size
-    init = tf.keras.initializers.VarianceScaling(mode='fan_avg')
-
-    # 2. Create the Dense layer
-    # IMPORTANT: use_bias=False because BatchNormalization provides 'beta'
-    # activation=None because we normalize BEFORE activating
+    # Dense layer with VarianceScaling initializer
     dense = tf.keras.layers.Dense(
         units=n,
-        kernel_initializer=init,
-        use_bias=False
-    )
-    Z = dense(prev)
+        kernel_initializer=tf.keras.initializers.VarianceScaling(mode='fan_avg')
+    )(prev)
 
-    # 3. Create the Batch Normalization layer
-    # gamma_init default is 'ones', beta_init default is 'zeros'
-    batch_norm = tf.keras.layers.BatchNormalization(epsilon=1e-7)
-    Z_norm = batch_norm(Z)
+    # Batch normalization layer
+    batch_norm = tf.keras.layers.BatchNormalization(
+        axis=-1,
+        momentum=0.99,
+        epsilon=1e-7,
+        center=True,   # beta trainable
+        scale=True     # gamma trainable
+    )(dense)
 
-    # 4. Apply activation if it exists
-    if activation is None:
-        return Z_norm
+    # Apply activation function
+    output = activation(batch_norm)
 
-    return activation(Z_norm)
+    return output
