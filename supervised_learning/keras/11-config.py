@@ -27,7 +27,7 @@ def load_config(filename):
     Loads a model with a specific configuration
 
     Args:
-        filename: path of the file containing the model's 
+        filename: path of the file containing the model's
                   configuration in JSON format
 
     Returns:
