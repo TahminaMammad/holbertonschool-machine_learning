@@ -25,8 +25,8 @@ def create_batch_norm_layer(prev, n, activation):
         axis=-1,
         momentum=0.99,
         epsilon=1e-7,
-        center=True,   # beta trainable
-        scale=True     # gamma trainable
+        center=True,
+        scale=True
     )(dense)
 
     # Apply activation function
