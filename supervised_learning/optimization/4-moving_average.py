@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Module to calculate the exponentially weighted moving average with bias correction
+Module to calculate exponentially weighted moving averages
 """
 
 
@@ -25,7 +25,6 @@ def moving_average(data, beta):
 
         # Apply bias correction
         # v_corrected = v_t / (1 - beta^t)
-        # Note: i starts at 0, so we use i + 1 for the power t
         v_corrected = v / (1 - (beta ** (i + 1)))
 
         moving_averages.append(v_corrected)
