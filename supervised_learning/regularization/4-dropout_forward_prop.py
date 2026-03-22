@@ -11,7 +11,7 @@ def dropout_forward_prop(X, weights, L, keep_prob):
 
     Parameters:
     X (numpy.ndarray): input data (nx, m)
-    weights (dict): weights and biases
+    weights (dict): weights and biases of the network
     L (int): number of layers
     keep_prob (float): probability of keeping a neuron active
 
@@ -29,15 +29,16 @@ def dropout_forward_prop(X, weights, L, keep_prob):
         Z = np.matmul(W, A_prev) + b
 
         if i == L:
-            # Output layer (softmax)
+            # Softmax activation (no dropout here)
             exp_Z = np.exp(Z)
-            cache['A' + str(i)] = exp_Z / np.sum(exp_Z, axis=0)
+            A = exp_Z / np.sum(exp_Z, axis=0)
+            cache['A' + str(i)] = A
         else:
-            # Hidden layer (tanh)
+            # Tanh activation
             A = np.tanh(Z)
 
-            # Dropout mask
-            D = np.random.rand(*A.shape) < keep_prob
+            # Dropout
+            D = np.random.rand(A.shape[0], A.shape[1]) < keep_prob
             A = A * D
             A = A / keep_prob
 
