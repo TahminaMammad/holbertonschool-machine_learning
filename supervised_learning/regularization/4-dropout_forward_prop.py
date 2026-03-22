@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Module that contains the function dropout_forward_prop
+Module to conduct forward propagation with Dropout
 """
 import numpy as np
 
@@ -9,14 +9,15 @@ def dropout_forward_prop(X, weights, L, keep_prob):
     """
     Conducts forward propagation using Dropout
 
-    Parameters:
-    X (numpy.ndarray): input data (nx, m)
-    weights (dict): weights and biases of the network
-    L (int): number of layers
-    keep_prob (float): probability of keeping a neuron active
+    Args:
+        X: numpy.ndarray of shape (nx, m) containing the input data
+        weights: dictionary of the weights and biases of the network
+        L: number of layers in the network
+        keep_prob: probability that a node will be kept
 
     Returns:
-    dict: cache containing activations and dropout masks
+        A dictionary containing the outputs of each layer and the
+        dropout mask used on each layer
     """
     cache = {}
     cache['A0'] = X
@@ -26,23 +27,28 @@ def dropout_forward_prop(X, weights, L, keep_prob):
         b = weights['b' + str(i)]
         A_prev = cache['A' + str(i - 1)]
 
+        # Linear Step: Z = W * A_prev + b
         Z = np.matmul(W, A_prev) + b
 
-        if i == L:
-            # Softmax activation (no dropout here)
-            exp_Z = np.exp(Z)
-            A = exp_Z / np.sum(exp_Z, axis=0)
-            cache['A' + str(i)] = A
-        else:
-            # Tanh activation
+        if i < L:
+            # Activation Step: tanh for hidden layers
             A = np.tanh(Z)
 
-            # Dropout
-            D = np.random.rand(A.shape[0], A.shape[1]) < keep_prob
-            A = A * D
-            A = A / keep_prob
+            # Dropout Step
+            # Create a mask of zeros and ones based on keep_prob
+            # The mask has the same shape as the activation output A
+            mask = (np.random.rand(A.shape[0], A.shape[1]) < keep_prob)
+            mask = mask.astype(int)
 
+            # Apply mask and scale (Inverted Dropout)
+            A = (A * mask) / keep_prob
+
+            cache['D' + str(i)] = mask
             cache['A' + str(i)] = A
-            cache['D' + str(i)] = D
+        else:
+            # Activation Step: softmax for the last layer
+            exp_Z = np.exp(Z - np.max(Z, axis=0, keepdims=True))
+            A = exp_Z / np.sum(exp_Z, axis=0, keepdims=True)
+            cache['A' + str(i)] = A
 
     return cache
