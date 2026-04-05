@@ -24,16 +24,14 @@ def conv_forward(A_prev, W, b, activation, padding="same", stride=(1, 1)):
     sh, sw = stride
 
     if padding == "same":
-        h_new = int(np.ceil(h_prev / sh))
-        w_new = int(np.ceil(w_prev / sw))
-
-        ph = int(((h_new - 1) * sh + kh - h_prev) / 2)
-        pw = int(((w_new - 1) * sw + kw - w_prev) / 2)
-
-    elif padding == "valid":
+        ph = int(np.ceil(((h_prev - 1) * sh + kh - h_prev) / 2))
+        pw = int(np.ceil(((w_prev - 1) * sw + kw - w_prev) / 2))
+    else:
         ph = pw = 0
-        h_new = int((h_prev - kh) / sh) + 1
-        w_new = int((w_prev - kw) / sw) + 1
+
+    # Output dimensions
+    h_new = int((h_prev + 2 * ph - kh) / sh) + 1
+    w_new = int((w_prev + 2 * pw - kw) / sw) + 1
 
     # Padding
     A_prev_padded = np.pad(
@@ -42,7 +40,7 @@ def conv_forward(A_prev, W, b, activation, padding="same", stride=(1, 1)):
         mode='constant'
     )
 
-    # Output initialization
+    # Initialize output
     Z = np.zeros((m, h_new, w_new, c_new))
 
     # Convolution
@@ -62,9 +60,6 @@ def conv_forward(A_prev, W, b, activation, padding="same", stride=(1, 1)):
 
                     Z[i, h, w, c] = np.sum(
                         slice_A * W[:, :, :, c]
-                    ) + b[:, :, :, c]
+                    ) + b[0, 0, 0, c]   # ✅ FIXED
 
-    # Apply activation
-    A = activation(Z)
-
-    return A
+    return activation(Z)
