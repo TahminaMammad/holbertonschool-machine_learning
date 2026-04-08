@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
 """
-Module that contains a function to rotate an image
-90 degrees counter-clockwise using TensorFlow.
+Module that contains a function to randomly adjust
+the contrast of an image using TensorFlow.
 """
 
 import tensorflow as tf
 
 
-def rotate_image(image):
+def change_contrast(image, lower, upper):
     """
-    Rotates an image by 90 degrees counter-clockwise.
+    Randomly adjusts the contrast of an image.
 
     Args:
-        image: a 3D tf.Tensor containing the image to rotate
+        image: a 3D tf.Tensor representing the input image
+        lower: a float representing the lower bound of the
+               contrast factor range
+        upper: a float representing the upper bound of the
+               contrast factor range
 
     Returns:
-        The rotated image as a tf.Tensor
+        The contrast-adjusted image as a tf.Tensor
     """
-    return tf.image.rot90(image)
+    return tf.image.random_contrast(image, lower, upper)
