@@ -12,7 +12,7 @@ class Yolo:
 
     def __init__(self, model_path, classes_path,
                  class_t, nms_t, anchors):
-        """Initialize"""
+        """Initialize Yolo"""
         self.model = K.models.load_model(model_path)
 
         with open(classes_path, 'r') as f:
@@ -22,13 +22,21 @@ class Yolo:
         self.nms_t = nms_t
         self.anchors = anchors
 
-    def sigmoid(self, x):
-        """Sigmoid function"""
+    @staticmethod
+    def sigmoid(x):
+        """Sigmoid activation"""
         return 1 / (1 + np.exp(-x))
 
     def process_outputs(self, outputs, image_size):
         """
-        Process YOLO outputs
+        Processes YOLO outputs
+
+        Parameters:
+        outputs (list): list of numpy arrays
+        image_size (numpy.ndarray): [image_height, image_width]
+
+        Returns:
+        boxes, box_confidences, box_class_probs
         """
 
         boxes = []
@@ -49,15 +57,17 @@ class Yolo:
             tw = output[..., 2]
             th = output[..., 3]
 
-            # Grid offsets
+            # 🔥 Correct grid generation (important fix)
             cx = np.arange(grid_w)
             cy = np.arange(grid_h)
-            cx, cy = np.meshgrid(cx, cy)
 
-            cx = np.expand_dims(cx, axis=-1)
-            cy = np.expand_dims(cy, axis=-1)
+            cx = cx.reshape(1, grid_w, 1)
+            cy = cy.reshape(grid_h, 1, 1)
 
-            # Normalize center
+            cx = np.tile(cx, (grid_h, 1, anchor_boxes))
+            cy = np.tile(cy, (1, grid_w, anchor_boxes))
+
+            # Center coordinates
             bx = (self.sigmoid(tx) + cx) / grid_w
             by = (self.sigmoid(ty) + cy) / grid_h
 
@@ -68,11 +78,11 @@ class Yolo:
             anchor_w = anchor_w.reshape((1, 1, anchor_boxes))
             anchor_h = anchor_h.reshape((1, 1, anchor_boxes))
 
-            # Width & height
+            # Width and height
             bw = (anchor_w * np.exp(tw)) / input_w
             bh = (anchor_h * np.exp(th)) / input_h
 
-            # Convert to corners
+            # Convert to corner coordinates
             x1 = (bx - bw / 2) * image_w
             y1 = (by - bh / 2) * image_h
             x2 = (bx + bw / 2) * image_w
@@ -81,9 +91,10 @@ class Yolo:
             box = np.stack([x1, y1, x2, y2], axis=-1)
             boxes.append(box)
 
-            # Confidence
+            # Box confidence
             confidence = self.sigmoid(output[..., 4])
-            box_confidences.append(np.expand_dims(confidence, axis=-1))
+            confidence = np.expand_dims(confidence, axis=-1)
+            box_confidences.append(confidence)
 
             # Class probabilities
             class_probs = self.sigmoid(output[..., 5:])
