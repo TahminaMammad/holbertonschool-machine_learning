@@ -7,39 +7,44 @@ import numpy as np
 
 def pca(X, var=0.95):
     """
-    Performs PCA on a dataset and returns the weight matrix W.
+    Performs PCA on a dataset and returns projection matrix W
+    that preserves `var` fraction of variance.
 
     Parameters
     ----------
     X : numpy.ndarray of shape (n, d)
-        The dataset (assumed centered with mean 0 per feature)
+        Dataset (assumed centered)
     var : float
-        Fraction of variance to retain
+        Fraction of variance to preserve
 
     Returns
     -------
     W : numpy.ndarray of shape (d, nd)
-        Projection matrix that retains `var` variance
+        Projection matrix
     """
     n = X.shape[0]
 
-    # Covariance matrix (d x d)
+    # Covariance matrix
     cov = np.dot(X.T, X) / (n - 1)
 
-    # Eigen decomposition (symmetric matrix)
+    # Eigen decomposition (cov is symmetric)
     eig_vals, eig_vecs = np.linalg.eigh(cov)
 
-    # Sort eigenvalues and eigenvectors in descending order
+    # Sort in descending order
     idx = np.argsort(eig_vals)[::-1]
     eig_vals = eig_vals[idx]
     eig_vecs = eig_vecs[:, idx]
 
-    # Compute cumulative variance ratio
+    # Cumulative variance ratio
     total_variance = np.sum(eig_vals)
-    cum_variance = np.cumsum(eig_vals) / total_variance
+    cum_var = np.cumsum(eig_vals) / total_variance
 
-    # Select number of components
-    nd = np.searchsorted(cum_variance, var) + 1
+    # FIX: correct component selection
+    nd = 0
+    for i in range(len(cum_var)):
+        nd = i + 1
+        if cum_var[i] >= var:
+            break
 
     # Projection matrix
     W = eig_vecs[:, :nd]
