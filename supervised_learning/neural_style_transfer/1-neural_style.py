@@ -59,8 +59,8 @@ class NST:
     @staticmethod
     def scale_image(image):
         """
-        Rescale an image so that its pixels values are between 0 and 1
-        and its largest side is 512 pixels.
+        Rescale an image so that its pixel values are between
+        0 and 1 and its largest side is 512 pixels.
 
         Args:
             image (np.ndarray): image to scale
@@ -104,9 +104,6 @@ class NST:
     def load_model(self):
         """
         Create the model used to calculate cost.
-
-        The model uses VGG19 as a base model and outputs
-        the activations of the style layers and content layer.
         """
 
         vgg = tf.keras.applications.VGG19(
@@ -116,29 +113,26 @@ class NST:
 
         vgg.trainable = False
 
-        custom_objects = {'MaxPooling2D': tf.keras.layers.AveragePooling2D}
+        outputs = []
 
-        vgg = tf.keras.models.clone_model(
-            vgg,
-            clone_function=lambda layer:
-            custom_objects['MaxPooling2D']()
-            if isinstance(layer, tf.keras.layers.MaxPooling2D)
-            else layer
-        )
+        x = vgg.input
 
-        vgg.set_weights(
-            tf.keras.applications.VGG19(
-                include_top=False,
-                weights='imagenet'
-            ).get_weights()
-        )
+        for layer in vgg.layers[1:]:
 
-        outputs = [vgg.get_layer(name).output
-                   for name in self.style_layers]
+            if isinstance(layer, tf.keras.layers.MaxPooling2D):
+                layer = tf.keras.layers.AveragePooling2D(
+                    pool_size=layer.pool_size,
+                    strides=layer.strides,
+                    padding=layer.padding
+                )
 
-        outputs.append(
-            vgg.get_layer(self.content_layer).output
-        )
+            x = layer(x)
+
+            if layer.name in self.style_layers:
+                outputs.append(x)
+
+            if layer.name == self.content_layer:
+                outputs.append(x)
 
         self.model = tf.keras.models.Model(
             inputs=vgg.input,
