@@ -12,7 +12,7 @@ def pca(X, ndim):
     Parameters
     ----------
     X : numpy.ndarray of shape (n, d)
-        Input dataset (assumed centered or raw)
+        Input dataset
     ndim : int
         Target number of dimensions
 
@@ -23,7 +23,7 @@ def pca(X, ndim):
     """
     n = X.shape[0]
 
-    # Center data (important for correctness)
+    # Center data
     X_mean = np.mean(X, axis=0)
     X_centered = X - X_mean
 
@@ -33,11 +33,11 @@ def pca(X, ndim):
     # Eigen decomposition
     eig_vals, eig_vecs = np.linalg.eigh(cov)
 
-    # Sort descending by eigenvalues
+    # Sort eigenvalues (descending)
     idx = np.argsort(eig_vals)[::-1]
     eig_vecs = eig_vecs[:, idx]
 
-    # Take top ndim components
+    # Keep top ndim components
     W = eig_vecs[:, :ndim]
 
     # Project data
