@@ -30,14 +30,16 @@ class NST:
                 len(style_image.shape) != 3 or
                 style_image.shape[2] != 3):
             raise TypeError(
-                "style_image must be a numpy.ndarray with shape (h, w, 3)"
+                "style_image must be a numpy.ndarray with "
+                "shape (h, w, 3)"
             )
 
         if (not isinstance(content_image, np.ndarray) or
                 len(content_image.shape) != 3 or
                 content_image.shape[2] != 3):
             raise TypeError(
-                "content_image must be a numpy.ndarray with shape (h, w, 3)"
+                "content_image must be a numpy.ndarray with "
+                "shape (h, w, 3)"
             )
 
         if (not isinstance(alpha, (int, float)) or alpha < 0):
@@ -123,7 +125,8 @@ class NST:
                 layer = tf.keras.layers.AveragePooling2D(
                     pool_size=layer.pool_size,
                     strides=layer.strides,
-                    padding=layer.padding
+                    padding=layer.padding,
+                    name=layer.name
                 )
 
             x = layer(x)
