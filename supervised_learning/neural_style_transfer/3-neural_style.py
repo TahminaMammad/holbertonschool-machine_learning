@@ -118,9 +118,8 @@ class NST:
 
         vgg.trainable = False
 
-        outputs = []
-
         x = vgg.input
+        outputs_dict = {}
 
         for layer in vgg.layers[1:]:
 
@@ -134,11 +133,12 @@ class NST:
 
             x = layer(x)
 
-            if layer.name in self.style_layers:
-                outputs.append(x)
+            outputs_dict[layer.name] = x
 
-            if layer.name == self.content_layer:
-                outputs.append(x)
+        outputs = [outputs_dict[name]
+                   for name in self.style_layers]
+
+        outputs.append(outputs_dict[self.content_layer])
 
         self.model = tf.keras.models.Model(
             inputs=vgg.input,
@@ -184,8 +184,8 @@ class NST:
         neural style cost.
         """
 
-        style_image = self.style_image * 255
-        content_image = self.content_image * 255
+        style_image = self.style_image * 255.0
+        content_image = self.content_image * 255.0
 
         style_image = tf.keras.applications.vgg19.preprocess_input(
             style_image
@@ -198,11 +198,13 @@ class NST:
         style_outputs = self.model(style_image)
         content_outputs = self.model(content_image)
 
-        style_features = style_outputs[:-1]
+        style_features = style_outputs[:len(self.style_layers)]
 
         self.gram_style_features = [
             self.gram_matrix(style_feature)
             for style_feature in style_features
         ]
 
-        self.content_feature = content_outputs[-1]
+        self.content_feature = content_outputs[
+            len(self.style_layers)
+        ]
