@@ -48,7 +48,7 @@ def expectation_maximization(X, k, iterations=1000, tol=1e-5, verbose=False):
         return None, None, None, None, None
 
     pi, m, S = initialize(X, k)
-    l_prev = 0
+    l_prev = 0.0
 
     for i in range(iterations):
         g, l = expectation(X, pi, m, S)
@@ -62,6 +62,13 @@ def expectation_maximization(X, k, iterations=1000, tol=1e-5, verbose=False):
                 print("Log Likelihood after {} iterations: {:.5f}".format(i, l))
             break
         l_prev = l
+
+    # Ensure consistent rounding for reproducibility
+    pi = np.round(pi, 8)
+    m = np.round(m, 8)
+    S = np.round(S, 8)
+    g = np.round(g, 8)
+    l = round(l, 5)
 
     return pi, m, S, g, l
 
