@@ -17,12 +17,12 @@ def expectation(X, pi, m, S):
         S (numpy.ndarray): shape (k, d, d) containing covariance matrices
 
     Returns:
-        g, l
+        g, log_likelihood
 
         g is a numpy.ndarray of shape (k, n)
         containing posterior probabilities
 
-        l is the total log likelihood
+        log_likelihood is the total log likelihood
 
         Returns (None, None) on failure
     """
@@ -69,6 +69,6 @@ def expectation(X, pi, m, S):
 
     g = probs / total
 
-    l = np.sum(np.log(total))
+    log_likelihood = np.sum(np.log(total))
 
-    return g, l
+    return g, log_likelihood
