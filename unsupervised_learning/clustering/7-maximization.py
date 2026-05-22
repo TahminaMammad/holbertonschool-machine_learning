@@ -1,28 +1,24 @@
 #!/usr/bin/env python3
-"""Maximization step for a Gaussian Mixture Model."""
+"""Maximization step for Gaussian Mixture Model."""
 
 import numpy as np
 
 
 def maximization(X, g):
-    """Calculates the maximization step in the EM algorithm for a GMM.
+    """Performs the maximization step in EM for a GMM.
 
     Args:
-        X (numpy.ndarray): shape (n, d) containing the data set.
-        g (numpy.ndarray): shape (k, n) containing posterior probabilities.
+        X (numpy.ndarray): shape (n, d), dataset.
+        g (numpy.ndarray): shape (k, n), posterior probabilities.
 
     Returns:
-        tuple:
-            pi (numpy.ndarray): shape (k,) containing updated priors.
-            m (numpy.ndarray): shape (k, d) containing updated means.
-            S (numpy.ndarray): shape (k, d, d) containing updated covariances.
-
-        Returns (None, None, None) on failure.
+        pi (numpy.ndarray): shape (k,), priors.
+        m (numpy.ndarray): shape (k, d), means.
+        S (numpy.ndarray): shape (k, d, d), covariances.
+        (None, None, None) on failure.
     """
-    if (not isinstance(X, np.ndarray) or X.ndim != 2):
-        return None, None, None
-
-    if (not isinstance(g, np.ndarray) or g.ndim != 2):
+    if (not isinstance(X, np.ndarray) or X.ndim != 2 or
+            not isinstance(g, np.ndarray) or g.ndim != 2):
         return None, None, None
 
     n, d = X.shape
@@ -31,23 +27,24 @@ def maximization(X, g):
     if n != n_g:
         return None, None, None
 
-    if not np.allclose(np.sum(g, axis=0), np.ones(n)):
-        return None, None, None
-
-    if np.any(g < 0):
-        return None, None, None
-
+    # responsibilities per cluster
     weights = np.sum(g, axis=1)
 
+    # avoid division by zero (important fix)
+    if np.any(weights == 0):
+        return None, None, None
+
+    # priors
     pi = weights / n
 
-    m = (g @ X) / weights[:, np.newaxis]
+    # means
+    m = np.dot(g, X) / weights[:, np.newaxis]
 
+    # covariance matrices
     S = np.zeros((k, d, d))
 
     for i in range(k):
         diff = X - m[i]
-        weighted_diff = g[i][:, np.newaxis] * diff
-        S[i] = (weighted_diff.T @ diff) / weights[i]
+        S[i] = np.dot((g[i][:, np.newaxis] * diff).T, diff) / weights[i]
 
     return pi, m, S
