@@ -9,12 +9,12 @@ def initialize(X, k):
     """Initializes cluster centroids for K-means.
 
     Args:
-        X (numpy.ndarray): shape (n, d) containing the dataset.
-        k (int): number of clusters.
+        X (numpy.ndarray): shape (n, d) containing the dataset
+        k (int): number of clusters
 
     Returns:
-        numpy.ndarray: shape (k, d) containing initialized centroids,
-        or None on failure.
+        numpy.ndarray: initialized centroids of shape (k, d)
+        or None on failure
     """
     if (not isinstance(X, np.ndarray) or
             len(X.shape) != 2 or
@@ -25,23 +25,26 @@ def initialize(X, k):
     mins = np.min(X, axis=0)
     maxs = np.max(X, axis=0)
 
-    return np.random.uniform(low=mins, high=maxs,
-                             size=(k, X.shape[1]))
+    return np.random.uniform(mins, maxs, (k, X.shape[1]))
 
 
 def kmeans(X, k, iterations=1000):
     """Performs K-means clustering on a dataset.
 
     Args:
-        X (numpy.ndarray): shape (n, d) containing the dataset.
-        k (int): number of clusters.
-        iterations (int): maximum number of iterations.
+        X (numpy.ndarray): shape (n, d) containing the dataset
+        k (int): number of clusters
+        iterations (int): maximum number of iterations
 
     Returns:
-        tuple:
-            C (numpy.ndarray): centroid means for each cluster.
-            clss (numpy.ndarray): index of cluster for each point.
-        or (None, None) on failure.
+        C, clss
+        C is a numpy.ndarray of shape (k, d) containing
+        the centroid means for each cluster
+
+        clss is a numpy.ndarray of shape (n,) containing
+        the index of the cluster in C that each data point belongs to
+
+        Returns (None, None) on failure
     """
     if (not isinstance(X, np.ndarray) or
             len(X.shape) != 2):
@@ -60,11 +63,14 @@ def kmeans(X, k, iterations=1000):
     if C is None:
         return None, None
 
-    mins = np.min(X, axis=0)
-    maxs = np.max(X, axis=0)
+    low = np.min(X, axis=0)
+    high = np.max(X, axis=0)
 
     for i in range(iterations):
-        distances = np.linalg.norm(X[:, np.newaxis] - C, axis=2)
+        distances = np.sqrt(
+            np.sum((X[:, np.newaxis] - C) ** 2, axis=2)
+        )
+
         clss = np.argmin(distances, axis=1)
 
         new_C = np.copy(C)
@@ -74,16 +80,22 @@ def kmeans(X, k, iterations=1000):
 
             if len(points) == 0:
                 new_C[j] = np.random.uniform(
-                    low=mins,
-                    high=maxs,
-                    size=(d,)
+                    low,
+                    high,
+                    (d,)
                 )
             else:
                 new_C[j] = np.mean(points, axis=0)
 
-        if np.allclose(C, new_C):
-            return new_C, clss
+        if np.array_equal(C, new_C):
+            return C, clss
 
-        C = new_C
+        C = np.copy(new_C)
+
+    distances = np.sqrt(
+        np.sum((X[:, np.newaxis] - C) ** 2, axis=2)
+    )
+
+    clss = np.argmin(distances, axis=1)
 
     return C, clss
