@@ -8,98 +8,65 @@ GP = __import__('2-gp').GaussianProcess
 
 
 class BayesianOptimization:
-    """Performs Bayesian optimization."""
+    """Performs Bayesian optimization on a Gaussian process."""
 
     def __init__(self, f, X_init, Y_init, bounds,
                  ac_samples, l=1, sigma_f=1,
                  xsi=0.01, minimize=True):
-        """
-        Initialize Bayesian Optimization.
-
-        Args:
-            f (function): black-box function.
-            X_init (numpy.ndarray): sampled input points.
-            Y_init (numpy.ndarray): sampled outputs.
-            bounds (tuple): search space bounds.
-            ac_samples (int): number of acquisition samples.
-            l (float): kernel length parameter.
-            sigma_f (float): kernel standard deviation.
-            xsi (float): exploration-exploitation factor.
-            minimize (bool): determines minimization
-                or maximization.
-        """
+        """Initialize Bayesian Optimization."""
         self.f = f
-
         self.gp = GP(X_init, Y_init, l, sigma_f)
 
         self.X_s = np.linspace(
-            bounds[0],
-            bounds[1],
-            ac_samples
+            bounds[0], bounds[1], ac_samples
         ).reshape(-1, 1)
 
         self.xsi = xsi
         self.minimize = minimize
 
     def acquisition(self):
-        """
-        Calculate the next best sample location.
-
-        Uses the Expected Improvement acquisition function.
-
-        Returns:
-            X_next (numpy.ndarray): next sample point.
-            EI (numpy.ndarray): expected improvement.
-        """
+        """Compute Expected Improvement and next sample."""
         mu, sigma = self.gp.predict(self.X_s)
 
         if self.minimize:
-            optimum = np.min(self.gp.Y)
-            improvement = optimum - mu - self.xsi
+            best = np.min(self.gp.Y)
+            imp = best - mu - self.xsi
         else:
-            optimum = np.max(self.gp.Y)
-            improvement = mu - optimum - self.xsi
+            best = np.max(self.gp.Y)
+            imp = mu - best - self.xsi
+
+        sigma = sigma.reshape(-1)
 
         with np.errstate(divide='warn'):
-            Z = improvement / sigma
+            Z = np.zeros_like(mu)
+            mask = sigma > 0
+            Z[mask] = imp[mask] / sigma[mask]
 
-            EI = improvement * norm.cdf(Z)
-            EI = EI + sigma * norm.pdf(Z)
-
-            EI[sigma == 0.0] = 0.0
+            EI = np.zeros_like(mu)
+            EI[mask] = (
+                imp[mask] * norm.cdf(Z[mask]) +
+                sigma[mask] * norm.pdf(Z[mask])
+            )
 
         X_next = self.X_s[np.argmax(EI)]
 
-        return X_next, EI
+        return X_next, EI.reshape(-1)
 
     def optimize(self, iterations=100):
-        """
-        Optimize the black-box function.
-
-        Args:
-            iterations (int): maximum number
-                of iterations.
-
-        Returns:
-            X_opt (numpy.ndarray): optimal point.
-            Y_opt (numpy.ndarray): optimal value.
-        """
-        for i in range(iterations):
+        """Optimize black-box function."""
+        for _ in range(iterations):
             X_next, _ = self.acquisition()
 
+            # STOP if already sampled (IMPORTANT FIX)
             if np.any(np.isclose(self.gp.X, X_next)):
                 break
 
             Y_next = self.f(X_next)
-
             self.gp.update(X_next, Y_next)
 
         if self.minimize:
-            index = np.argmin(self.gp.Y)
+            idx = np.argmin(self.gp.Y)
         else:
-            index = np.argmax(self.gp.Y)
+            idx = np.argmax(self.gp.Y)
 
-        X_opt = self.gp.X[index]
-        Y_opt = self.gp.Y[index]
-
-        return X_opt, Y_opt
+        return self.gp.X[idx], self.gp.Y[idx]
