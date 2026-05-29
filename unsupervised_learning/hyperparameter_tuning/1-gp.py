@@ -12,13 +12,10 @@ class GaussianProcess:
         Initialize the Gaussian process.
 
         Args:
-            X_init (numpy.ndarray): shape (t, 1),
-                sampled input points.
-            Y_init (numpy.ndarray): shape (t, 1),
-                outputs of the black-box function.
+            X_init (numpy.ndarray): sampled input points.
+            Y_init (numpy.ndarray): outputs for sampled points.
             l (float): length parameter for the kernel.
-            sigma_f (float): standard deviation
-                for the output function.
+            sigma_f (float): standard deviation of the output.
         """
         self.X = X_init
         self.Y = Y_init
@@ -36,12 +33,12 @@ class GaussianProcess:
             X2 (numpy.ndarray): shape (n, 1)
 
         Returns:
-            numpy.ndarray: covariance matrix.
+            numpy.ndarray: covariance kernel matrix.
         """
         sqdist = (
-            np.sum(X1 ** 2, axis=1).reshape(-1, 1)
-            + np.sum(X2 ** 2, axis=1)
-            - 2 * np.matmul(X1, X2.T)
+            np.sum(X1 ** 2, axis=1).reshape(-1, 1) +
+            np.sum(X2 ** 2, axis=1) -
+            2 * np.matmul(X1, X2.T)
         )
 
         return (self.sigma_f ** 2) * np.exp(
@@ -54,19 +51,16 @@ class GaussianProcess:
 
         Args:
             X_s (numpy.ndarray): shape (s, 1),
-                points to predict.
+                sample points.
 
         Returns:
-            mu (numpy.ndarray): shape (s,),
-                predicted means.
-            sigma (numpy.ndarray): shape (s,),
-                predicted variances.
+            mu (numpy.ndarray): predicted means.
+            sigma (numpy.ndarray): predicted variances.
         """
-        K = self.K
         K_s = self.kernel(self.X, X_s)
         K_ss = self.kernel(X_s, X_s)
 
-        K_inv = np.linalg.inv(K)
+        K_inv = np.linalg.inv(self.K)
 
         mu_s = K_s.T @ K_inv @ self.Y
         cov_s = K_ss - K_s.T @ K_inv @ K_s
