@@ -25,8 +25,9 @@ class BayesianOptimization:
         self.minimize = minimize
 
     def acquisition(self):
-        """Compute Expected Improvement and next sample."""
+        """Compute Expected Improvement."""
         mu, sigma = self.gp.predict(self.X_s)
+        sigma = sigma.reshape(-1)
 
         if self.minimize:
             best = np.min(self.gp.Y)
@@ -35,18 +36,14 @@ class BayesianOptimization:
             best = np.max(self.gp.Y)
             imp = mu - best - self.xsi
 
-        sigma = sigma.reshape(-1)
-
         with np.errstate(divide='warn'):
             Z = np.zeros_like(mu)
             mask = sigma > 0
+
             Z[mask] = imp[mask] / sigma[mask]
 
             EI = np.zeros_like(mu)
-            EI[mask] = (
-                imp[mask] * norm.cdf(Z[mask]) +
-                sigma[mask] * norm.pdf(Z[mask])
-            )
+            EI[mask] = imp[mask] * norm.cdf(Z[mask]) + sigma[mask] * norm.pdf(Z[mask])
 
         X_next = self.X_s[np.argmax(EI)]
 
@@ -57,7 +54,6 @@ class BayesianOptimization:
         for _ in range(iterations):
             X_next, _ = self.acquisition()
 
-            # STOP if already sampled (IMPORTANT FIX)
             if np.any(np.isclose(self.gp.X, X_next)):
                 break
 
