@@ -3,9 +3,7 @@
 
 import tensorflow as tf
 
-MultiHeadAttention = __import__(
-    '6-multihead_attention'
-).MultiHeadAttention
+MultiHeadAttention = __import__('6-multihead_attention').MultiHeadAttention
 
 
 class EncoderBlock(tf.keras.layers.Layer):
@@ -46,12 +44,11 @@ class EncoderBlock(tf.keras.layers.Layer):
         Args:
             x: Input tensor of shape
                 (batch, input_seq_len, dm).
-            training: Boolean indicating whether the model is training.
+            training: Whether the model is training.
             mask: Optional mask for multi-head attention.
 
         Returns:
-            The encoder block output with shape
-            (batch, input_seq_len, dm).
+            Tensor of shape (batch, input_seq_len, dm).
         """
         attention, _ = self.mha(x, x, x, mask)
         attention = self.dropout1(
