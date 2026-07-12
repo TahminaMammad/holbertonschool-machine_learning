@@ -7,7 +7,7 @@ SelfAttention = __import__('1-self_attention').SelfAttention
 
 
 class RNNDecoder(tf.keras.layers.Layer):
-    """Decodes a target sequence using attention and a GRU."""
+    """RNN decoder with an attention mechanism."""
 
     def __init__(self, vocab, embedding, units, batch):
         """Initialize the RNN decoder.
@@ -21,12 +21,14 @@ class RNNDecoder(tf.keras.layers.Layer):
         super().__init__()
 
         self.embedding = tf.keras.layers.Embedding(vocab, embedding)
+
         self.gru = tf.keras.layers.GRU(
             units,
             return_sequences=True,
             return_state=True,
             recurrent_initializer="glorot_uniform"
         )
+
         self.F = tf.keras.layers.Dense(vocab)
         self.attention = SelfAttention(units)
 
@@ -34,21 +36,24 @@ class RNNDecoder(tf.keras.layers.Layer):
         """Perform the forward pass of the decoder.
 
         Args:
-            x: Previous target word with shape (batch, 1).
-            s_prev: Previous decoder hidden state.
-            hidden_states: Outputs from the encoder.
+            x: Previous target word of shape (batch, 1).
+            s_prev: Previous decoder state of shape (batch, units).
+            hidden_states: Encoder outputs of shape
+                (batch, input_seq_len, units).
 
         Returns:
-            y: Output vocabulary scores.
-            s: New decoder hidden state.
+            y: Output vocabulary scores of shape (batch, vocab).
+            s: New decoder hidden state of shape (batch, units).
         """
         context, _ = self.attention(s_prev, hidden_states)
 
         x = self.embedding(x)
         context = tf.expand_dims(context, axis=1)
+
         x = tf.concat([context, x], axis=-1)
 
-        outputs, s = self.gru(x, initial_state=s_prev)
+        outputs, s = self.gru(x)
+
         outputs = tf.reshape(outputs, (-1, outputs.shape[2]))
         y = self.F(outputs)
 
