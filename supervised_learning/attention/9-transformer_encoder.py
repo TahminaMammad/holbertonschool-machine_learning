@@ -3,9 +3,7 @@
 
 import tensorflow as tf
 
-positional_encoding = __import__(
-    '4-positional_encoding'
-).positional_encoding
+positional_encoding = __import__('4-positional_encoding').positional_encoding
 EncoderBlock = __import__('7-transformer_encoder_block').EncoderBlock
 
 
@@ -20,9 +18,9 @@ class Encoder(tf.keras.layers.Layer):
             N: Number of encoder blocks.
             dm: Dimensionality of the model.
             h: Number of attention heads.
-            hidden: Number of units in the hidden dense layers.
+            hidden: Number of units in the hidden dense layer.
             input_vocab: Size of the input vocabulary.
-            max_seq_len: Maximum input sequence length.
+            max_seq_len: Maximum possible sequence length.
             drop_rate: Dropout rate.
         """
         super().__init__()
@@ -48,22 +46,21 @@ class Encoder(tf.keras.layers.Layer):
         self.dropout = tf.keras.layers.Dropout(drop_rate)
 
     def call(self, x, training, mask):
-        """Perform the forward pass of the encoder.
+        """Calculate the output of the Transformer encoder.
 
         Args:
             x: Tensor of input word indices with shape
                 (batch, input_seq_len).
-            training: Whether the model is training.
-            mask: Mask for multi-head attention.
+            training: Boolean indicating whether training is active.
+            mask: Mask applied to multi-head attention.
 
         Returns:
             Tensor of shape (batch, input_seq_len, dm).
         """
-        seq_len = tf.shape(x)[1]
+        seq_len = x.shape[1]
 
         x = self.embedding(x)
         x *= tf.math.sqrt(tf.cast(self.dm, tf.float32))
-
         x += self.positional_encoding[:seq_len]
 
         x = self.dropout(x, training=training)
