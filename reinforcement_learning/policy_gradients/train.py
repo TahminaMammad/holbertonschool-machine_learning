@@ -6,8 +6,9 @@ import numpy as np
 policy_gradient = __import__('policy_gradient').policy_gradient
 
 
-def train(env, nb_episodes, alpha=0.000045, gamma=0.98):
-    """Train a policy-gradient agent and return each episode's score."""
+def train(env, nb_episodes, alpha=0.000045, gamma=0.98,
+          show_result=False):
+    """Train an agent, optionally render it, and return episode scores."""
     weight = np.random.rand(env.observation_space.shape[0],
                             env.action_space.n)
     scores = []
@@ -18,6 +19,9 @@ def train(env, nb_episodes, alpha=0.000045, gamma=0.98):
         rewards = []
 
         while True:
+            if show_result and episode % 1000 == 0:
+                env.render()
+
             action, gradient = policy_gradient(state, weight)
             state, reward, terminated, truncated, _ = env.step(action)
             gradients.append(gradient)
